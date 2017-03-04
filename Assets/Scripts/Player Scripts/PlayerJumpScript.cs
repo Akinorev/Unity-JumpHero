@@ -8,7 +8,9 @@ public class PlayerJumpScript : MonoBehaviour {
     private Rigidbody2D myBody;
     private Animator anim;
 
-    private float forceX, foceY;
+    [SerializeField]
+    private float forceX, forceY;
+
     private float tresholdX = 7f;
     private float tresholdY = 14f;
 
@@ -17,6 +19,18 @@ public class PlayerJumpScript : MonoBehaviour {
     void Awake ()
     {
         MakeInstance();
+        Initialize();
+    }
+
+    void Update()
+    {
+        SetPower();
+    }
+
+    void Initialize()
+    {
+        myBody = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     void MakeInstance ()
@@ -25,16 +39,49 @@ public class PlayerJumpScript : MonoBehaviour {
             instance = this;
     }
 
+    void SetPower()
+    {
+        if (setPower)
+        {
+            forceX += tresholdX * Time.deltaTime;
+            forceY += tresholdY * Time.deltaTime;
+
+            if (forceX > 6.5f)
+                forceX = 6.5f;
+
+            if (forceY > 13.5f)
+                forceY = 13.5f;
+        }
+    }
+
+
     public void SetPower (bool SetPower)
     {
         this.setPower = SetPower;
 
-        if (setPower)
+        if (!setPower)
         {
-            Debug.Log("We are setting the power");
-        } else
+            Jump();
+        }
+    }
+
+    void Jump()
+    {
+        myBody.velocity = new Vector2(forceX, forceY);
+        forceX = forceY = 0f;
+        didJump = true;
+    }
+
+    void OnTriggerEnter2D(Collider2D target)
+    {
+        if (didJump)
         {
-            Debug.Log("We are NOT setting the power");
+            didJump = false;
+
+            if (target.tag == "Platform")
+            {
+                Debug.Log("Landed on platform after jumping");
+            }
         }
     }
 }
